@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
-import { WorkSapceContenx } from './data/contenx';
+import Threads from './component/Threads';
+import { WorkSpaceContenx } from './data/contenx';
 import WorkSapce from './data/WorkSpace';
 
 function App() {
@@ -18,9 +19,9 @@ function App() {
 
   return (
     <div className='app'>
-      <WorkSapceContenx.Provider
-        value={workspaceData}
-      ></WorkSapceContenx.Provider>
+      <WorkSpaceContenx.Provider value={workspaceData}>
+        <Threads />
+      </WorkSpaceContenx.Provider>
     </div>
   );
 }

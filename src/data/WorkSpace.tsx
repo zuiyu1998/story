@@ -167,7 +167,7 @@ type Character = {
   id: number;
 };
 
-type Node = {
+export type Node = {
   width: number;
   height: number;
   text: string;
@@ -187,7 +187,7 @@ export function getDefaultNode(): Node {
   };
 }
 
-type Thread = {
+export type Thread = {
   key: string;
   name: string;
   nodes: Node[];
