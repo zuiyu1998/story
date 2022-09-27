@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
-import reactLogo from './assets/react.svg';
+import React from 'react';
 import './App.css';
-import WorkSapce, { getDefaultWorkSpaceData } from './data/WorkSpace';
+import { WorkSapceContenx } from './data/contenx';
+import WorkSapce from './data/WorkSpace';
 
 function App() {
   const workspace = React.useRef(new WorkSapce());
 
   const [workspaceData, setworspaceData] = React.useState(
-    workspace.current.updateWorkSapce()
+    workspace.current.getWorkSapce()
   );
 
-  React.useEffect(() => {}, []);
+  React.useEffect(() => {
+    workspace.current.addListener((data) => {
+      setworspaceData(data);
+    });
+  }, []);
 
-  return <div className='app'></div>;
+  return (
+    <div className='app'>
+      <WorkSapceContenx.Provider
+        value={workspaceData}
+      ></WorkSapceContenx.Provider>
+    </div>
+  );
 }
 
 export default App;

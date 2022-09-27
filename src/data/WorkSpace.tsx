@@ -1,6 +1,10 @@
+import { getOnlyKey } from '../utils/getOnlyKey';
+
 export type WorkSpaceData = {
   threads: Thread[];
   stages: StageData[];
+  insertNodeByThread?: (key: string, node: Node, needUpdate?: boolean) => void;
+  insertThread?: (thread: Thread, needUpdate?: boolean) => void;
 };
 
 export function getDefaultWorkSpaceData(): WorkSpaceData {
@@ -11,7 +15,7 @@ export function getDefaultWorkSpaceData(): WorkSpaceData {
     threads: [
       {
         name: '未命名',
-        key: '',
+        key: getOnlyKey(),
         nodes: [d_node],
       },
     ],
@@ -27,7 +31,11 @@ export default class WorkSapce {
   _threads: Thread[];
   _stages: Stage[];
 
+  _listeners: Function[];
+
   constructor() {
+    this._listeners = [];
+
     let workspace_data = getDefaultWorkSpaceData();
 
     this._stages = workspace_data.stages.map((item) => {
@@ -35,6 +43,7 @@ export default class WorkSapce {
 
       if (item.characters.length == 0) {
         return {
+          distance: workspace_data.threads[0].nodes[0].distance,
           characters: map,
         };
       } else {
@@ -43,6 +52,7 @@ export default class WorkSapce {
         });
 
         return {
+          distance: workspace_data.threads[0].nodes[0].distance,
           characters: map,
         };
       }
@@ -58,15 +68,94 @@ export default class WorkSapce {
     });
   };
 
-  updateWorkSapce: () => WorkSpaceData = () => {
+  getWorkSapce: () => WorkSpaceData = () => {
     return {
       threads: this._threads,
       stages: this.getStateData(),
+      insertNodeByThread: this.insertNodeByThread,
+      insertThread: this.insertThread,
     };
+  };
+
+  //添加app更改事件
+  addListener = (listener: (data: WorkSpaceData) => void) => {
+    this._listeners.push(listener);
+
+    return () => {
+      this._listeners = this._listeners.filter((item) => item != listener);
+    };
+  };
+
+  //更新app
+  updateApp = () => {
+    let newData = this.getWorkSapce();
+
+    this._listeners.forEach((lis) => {
+      lis(newData);
+    });
+  };
+
+  //添加node而更改stage
+  updateStagesByAddNode = (node: Node, needUpdate?: boolean) => {
+    let index = this._stages.findIndex(
+      (item) => item.distance == node.distance
+    );
+    if (index !== -1) {
+      return;
+    }
+
+    this._stages.push({
+      distance: node.distance,
+      characters: new Map(),
+    });
+
+    this._stages = this._stages.sort((a, b) => {
+      return a.distance - b.distance;
+    });
+
+    if (needUpdate) {
+      this.updateApp();
+    }
+  };
+
+  //在线索上添加node
+  insertNodeByThread = (key: string, node: Node, needUpdate?: boolean) => {
+    let index = this._threads.findIndex((item) => item.key === key);
+    if (index === -1) {
+      return;
+    }
+
+    this._threads[index].nodes.push(node);
+
+    this.updateStagesByAddNode(node);
+    if (needUpdate) {
+      this.updateApp();
+    }
+  };
+
+  //添加一条新线索
+  insertThread = (thread: Thread, needUpdate?: boolean) => {
+    let index = this._threads.findIndex((item) => item.key === thread.key);
+    if (index === -1) {
+      return;
+    }
+
+    this._threads.push(thread);
+
+    let self = this;
+
+    thread.nodes.forEach((node) => {
+      self.insertNodeByThread(thread.key, node);
+    });
+
+    if (needUpdate) {
+      this.updateApp();
+    }
   };
 }
 
 type Stage = {
+  distance: number;
   characters: Map<number, Character>;
 };
 
@@ -84,6 +173,7 @@ type Node = {
   text: string;
   color: string;
   stage_index: number;
+  distance: number;
 };
 
 export function getDefaultNode(): Node {
@@ -93,6 +183,7 @@ export function getDefaultNode(): Node {
     text: '未命名',
     stage_index: -1,
     color: '#FFFFFF',
+    distance: 200,
   };
 }
 
