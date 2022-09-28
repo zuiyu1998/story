@@ -9,18 +9,22 @@ export type WorkSpaceData = {
 
 export function getDefaultWorkSpaceData(): WorkSpaceData {
   let d_node = getDefaultNode();
-  d_node.stage_index = 0;
+  let thread: Thread = {
+    name: '未命名',
+    key: getOnlyKey(),
+    nodes: [],
+  };
+  d_node.key = getNodekey(thread, 0);
+
+  thread.nodes.push(d_node);
 
   return {
-    threads: [
-      {
-        name: '未命名',
-        key: getOnlyKey(),
-        nodes: [d_node],
-      },
-    ],
+    threads: [thread],
     stages: [
       {
+        left: 0,
+        width: d_node.distance,
+        distance: d_node.distance,
         characters: [],
       },
     ],
@@ -43,6 +47,8 @@ export default class WorkSapce {
 
       if (item.characters.length == 0) {
         return {
+          left: 0,
+          width: workspace_data.threads[0].nodes[0].distance,
           distance: workspace_data.threads[0].nodes[0].distance,
           characters: map,
         };
@@ -52,6 +58,8 @@ export default class WorkSapce {
         });
 
         return {
+          left: 0,
+          width: workspace_data.threads[0].nodes[0].distance,
           distance: workspace_data.threads[0].nodes[0].distance,
           characters: map,
         };
@@ -63,6 +71,9 @@ export default class WorkSapce {
   getStateData = () => {
     return this._stages.map((item) => {
       return {
+        left: item.left,
+        width: item.width,
+        distance: item.distance,
         characters: Array.from(item.characters.values()),
       };
     });
@@ -105,12 +116,27 @@ export default class WorkSapce {
     }
 
     this._stages.push({
+      left: 0,
+      width: 0,
       distance: node.distance,
       characters: new Map(),
     });
 
     this._stages = this._stages.sort((a, b) => {
       return a.distance - b.distance;
+    });
+
+    let self = this;
+
+    this._stages = this._stages.map((stage, index) => {
+      if (index === 0) {
+        stage.left = 0;
+        stage.width = stage.distance;
+      } else {
+        stage.left = self._stages[index - 1].distance;
+        stage.width = stage.distance - self._stages[index - 1].distance;
+      }
+      return stage;
     });
 
     if (needUpdate) {
@@ -155,11 +181,16 @@ export default class WorkSapce {
 }
 
 type Stage = {
+  left: number;
+  width: number;
   distance: number;
   characters: Map<number, Character>;
 };
 
-type StageData = {
+export type StageData = {
+  left: number;
+  width: number;
+  distance: number;
   characters: Character[];
 };
 
@@ -172,23 +203,25 @@ export type Node = {
   height: number;
   text: string;
   color: string;
-  stage_index: number;
   distance: number;
+  key: string;
 };
-
-export function getDefaultNode(): Node {
-  return {
-    width: 200,
-    height: 40,
-    text: '未命名',
-    stage_index: -1,
-    color: '#FFFFFF',
-    distance: 200,
-  };
-}
-
 export type Thread = {
   key: string;
   name: string;
   nodes: Node[];
 };
+export function getDefaultNode(): Node {
+  return {
+    width: 200,
+    height: 40,
+    text: '未命名',
+    color: '#FFFFFF',
+    distance: 200,
+    key: '',
+  };
+}
+
+export function getNodekey(node: Thread, index: number) {
+  return node.key + index.toString();
+}

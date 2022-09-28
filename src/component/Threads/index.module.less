@@ -1,1 +1,40 @@
-.main {}
+.main {
+    .thread {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .name {
+            width: 70px;
+            margin-right: 10px;
+            text-align: right;
+        }
+
+        .nodes {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            .node {
+                border: 1px solid red;
+                border-left: 0px;
+                text-align: center;
+
+                .inner {
+                    margin: 6px 10px;
+                    border: 1px solid red;
+                }
+            }
+
+            .node:first-child {
+                border-left: 1px solid red;
+            }
+
+        }
+
+        .add {
+            margin-left: 10px;
+            width: 70px;
+        }
+    }
+}

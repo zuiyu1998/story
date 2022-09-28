@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import Stages from './component/Stages';
 import Threads from './component/Threads';
 import { WorkSpaceContenx } from './data/contenx';
 import WorkSapce from './data/WorkSpace';
@@ -20,6 +21,7 @@ function App() {
   return (
     <div className='app'>
       <WorkSpaceContenx.Provider value={workspaceData}>
+        <Stages />
         <Threads />
       </WorkSpaceContenx.Provider>
     </div>
